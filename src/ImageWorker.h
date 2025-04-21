@@ -17,6 +17,7 @@ namespace ALPR {
         void previewPreProcess() const;
         void process();
 
+
     private:
         cv::Mat m_image;
         cv::Mat m_greyscaleImage;
@@ -27,6 +28,7 @@ namespace ALPR {
         int convertToGreyScale();
         int convertToBinary();
         int applyBlur(vector<vector<double>>);
+        static int hasEUIdentifier(cv::Mat image);
     };
 }
 

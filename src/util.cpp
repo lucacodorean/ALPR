@@ -4,6 +4,7 @@
 
 #include "util.h"
 #include <cmath>
+#include <opencv2/highgui.hpp>
 
 using namespace std;
 
@@ -39,4 +40,11 @@ int* ALPR::Util::computeHistogram(cv::Mat source) {
     }
 
     return histogram;
+}
+
+bool ALPR::Util::isBlue(const cv::Vec3b& pixel) {
+    int H = pixel[0];
+    int S = pixel[1];
+    int V = pixel[2];
+    return (H >= 100 && H <= 130 && S >= 150 && V >= 50);
 }

@@ -124,6 +124,58 @@ int ALPR::ImageWorker::convertToBinary() {
 
 }
 
+
+
+bool detectBlueRectangle(const Mat& inputImage, Rect& outRect) {
+    if (inputImage.empty()) return false;
+
+    Mat hsv;
+    Mat possibleSection = inputImage(Rect(0, 0, inputImage.cols/3, inputImage.rows));
+
+    cvtColor(possibleSection, hsv, COLOR_BGR2HSV);
+
+    int minX = inputImage.cols, maxX = 0;
+    int minY = inputImage.rows, maxY = 0;
+
+    for (int y = 0; y < hsv.rows; y++) {
+        for (int x = 0; x < hsv.cols; x++) {
+            Vec3b hsvPixel = hsv.at<Vec3b>(y, x);
+
+            if (ALPR::Util::isBlue(hsvPixel)) {
+                minX = min(minX, x);
+                maxX = max(maxX, x);
+                minY = min(minY, y);
+                maxY = max(maxY, y);
+            }
+        }
+    }
+
+    if (maxX > minX && maxY > minY) {
+        outRect = Rect(Point(minX, minY), Point(maxX, maxY));
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ *
+ * @param image represents the candidate area applied on the image
+ * @return SUCCESS if the area has the EU identifier. The EU identifier is the blue section at the beginning of each car-plate.
+ * @return FAILURE if the image is empty or the candidate area doesn't have the EU blue section.
+ */
+int ALPR::ImageWorker::hasEUIdentifier(Mat image) {
+    if (image.empty()) return FAILURE;
+
+    Rect blueRect;
+    if (detectBlueRectangle(image, blueRect)) {
+        rectangle(image, blueRect, Scalar(0, 255, 0), 2);
+        return SUCCESS;
+    }
+
+    return FAILURE;
+}
+
 bool isPlateAspectRatioValid(const Rect& boundingBox) {
     float aspectRatio = (float)boundingBox.width / boundingBox.height;
     return !(aspectRatio < 2.0f || aspectRatio > 5.0f);
@@ -148,7 +200,6 @@ int ALPR::ImageWorker::preProcess() {
     return SUCCESS;
 }
 
-
 void ALPR::ImageWorker::process() {
     if (this->preProcess() == FAILURE) {
         std::cout << "Preprocessing failed\n";
@@ -169,7 +220,10 @@ void ALPR::ImageWorker::process() {
 
     for (auto contour : contours) {
         Rect bounding_rect = boundingRect(contour);
-        if (isPlateAspectRatioValid(bounding_rect)) candidates.push_back(bounding_rect);
+        Mat temp = this->m_image(bounding_rect);
+        if (isPlateAspectRatioValid(bounding_rect) && hasEUIdentifier(temp) == SUCCESS) {
+            candidates.push_back(bounding_rect);
+        }
     }
 
     if (candidates.empty()) return;
@@ -182,16 +236,13 @@ void ALPR::ImageWorker::process() {
         if (area > maxArea) {
             maxArea = area;
             bestPlate = candidates[i];
-        }
-        rectangle(this->m_image, candidates[i], Scalar(0, 255, 255), 2);
-    }
+        }    }
+
     this->m_ROI = this->m_image(bestPlate);
     imshow("Original Image",     this->m_image);
     imshow("Region of interest", this->m_ROI);
     waitKey(0);
 }
-
-
 
 void ALPR::ImageWorker::previewPreProcess() const {
     imshow("Original",      this->m_image);

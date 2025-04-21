@@ -44,7 +44,7 @@ namespace ALPR {
          */
         static vector<vector<double>> generateGaussianKernel(int kernelSize, double sigma);
         static int*  computeHistogram(cv::Mat);
-
+        static bool isBlue(const cv::Vec3b&);
     };
 }
 
