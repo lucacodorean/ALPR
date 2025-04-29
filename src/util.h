@@ -55,12 +55,12 @@ namespace ALPR {
             static bool isInside(int, int, int, int);
 
             /** MORPHOLOGICAL OPERATIONS **/
-            static Mat dilation(Mat, neighborhood_structure, int=1);
-            static Mat erosion(Mat, neighborhood_structure, int=1);
-            static Mat closing(Mat, neighborhood_structure, int=1);
-            static Mat opening(Mat, neighborhood_structure, int=1);
+            static Mat erosion(Mat, neighborhood_structure, int);
+            static Mat dilation(Mat, neighborhood_structure, int);
+            static Mat closing(Mat, neighborhood_structure, int);
+            static Mat opening(Mat, neighborhood_structure, int);
 
-            static neighborhood_structure getNeigborhood() { return neighborhood; }
+            static neighborhood_structure getNeighborhood() { return neighborhood; }
 
         private:
             inline static neighborhood_structure neighborhood = {

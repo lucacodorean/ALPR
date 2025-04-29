@@ -53,7 +53,7 @@ bool ALPR::Util::isInside(int img_rows, int img_cols, int i, int j) {
     return i<img_rows && i>=0 && j<img_cols && j>=0;
 }
 
-Mat ALPR::Util::dilation(Mat source, neighborhood_structure neighborhood, int no_iter){
+Mat ALPR::Util::erosion(Mat source, neighborhood_structure neighborhood, int no_iter){
     Mat dst, aux;
 
     dst = Mat(source.rows, source.cols, source.type(), Scalar::all(255));
@@ -78,12 +78,12 @@ Mat ALPR::Util::dilation(Mat source, neighborhood_structure neighborhood, int no
         std::swap(aux, dst);
     }
 
-    dst = aux.clone();
+    // dst = aux.clone(); //AICI DADEAM CLONE LA AUXILIAR INCA O DATA
     return dst;
 
 }
 
-Mat ALPR::Util::erosion(Mat source, neighborhood_structure neighborhood, int no_iter){
+Mat ALPR::Util::dilation(Mat source, neighborhood_structure neighborhood, int no_iter){
     Mat dst, aux;
     aux = source.clone();
 

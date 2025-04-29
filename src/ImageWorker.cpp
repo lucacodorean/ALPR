@@ -204,13 +204,7 @@ void ALPR::ImageWorker::process() {
 
     Mat edges;
     Canny(this->m_blurredImage, edges, 75, 250);
-
-    Mat kernel = getStructuringElement(MORPH_RECT, Size(17, 3));
-    morphologyEx(edges, edges, MORPH_CLOSE, kernel);
-
-    // Returneaza imaginea goala for some reason, pe care inca nu l-am aflat.
-    // Any hint would be really appreciated.
-    // edges = Util::closing(edges, Util::getNeigborhood());
+    edges = Util::closing(edges, Util::getNeighborhood(),1);
 
     std::vector<Rect> candidates;
     std::vector<Vec4i> hierarchy;
