@@ -27,7 +27,7 @@ int ALPR::ImageWorker::convertToGreyScale() {
         return FAILURE;
     }
 
-    this->m_greyscaleImage = cv::Mat::zeros(this->m_image.rows, this->m_image.cols, CV_8UC1);
+    this->m_greyscaleImage = Mat::zeros(this->m_image.rows, this->m_image.cols, CV_8UC1);
 
     for (int i = 0; i<this->m_image.rows; i++) {
         for (int j = 0; j<this->m_image.cols; j++) {
@@ -119,12 +119,8 @@ int ALPR::ImageWorker::convertToBinary() {
             this->m_binaryImage.at<uchar>(i,j) = this->m_blurredImage.at<uchar>(i,j) < threshold ? 0 : 255;
         }
     }
-
     return SUCCESS;
-
 }
-
-
 
 bool detectBlueRectangle(const Mat& inputImage, Rect& outRect) {
     if (inputImage.empty()) return false;
@@ -212,6 +208,10 @@ void ALPR::ImageWorker::process() {
     Mat kernel = getStructuringElement(MORPH_RECT, Size(17, 3));
     morphologyEx(edges, edges, MORPH_CLOSE, kernel);
 
+    // Returneaza imaginea goala for some reason, pe care inca nu l-am aflat.
+    // Any hint would be really appreciated.
+    // edges = Util::closing(edges, Util::getNeigborhood());
+
     std::vector<Rect> candidates;
     std::vector<Vec4i> hierarchy;
     std::vector<std::vector<Point>> contours;
@@ -241,7 +241,6 @@ void ALPR::ImageWorker::process() {
     this->m_ROI = this->m_image(bestPlate);
     imshow("Original Image",     this->m_image);
     imshow("Region of interest", this->m_ROI);
-    waitKey(0);
 }
 
 void ALPR::ImageWorker::previewPreProcess() const {

@@ -7,7 +7,6 @@
 
 #include <vector>
 #include <opencv2/core/mat.hpp>
-#include <opencv2/dnn/version.hpp>
 
 #ifndef CONSTANTS_
     #define CONSTANTS_
@@ -28,23 +27,47 @@
 
 
 using namespace std;
+using namespace cv;
+
+typedef struct{
+    int size;
+    int di[8];
+    int dj[8];
+} neighborhood_structure;
 
 namespace ALPR {
     class Util {
         public:
 
-        /**
-         * This function will try so simulate the kernel that cv::GaussianBlur uses.
-         * The kernel can be seen as a window that moves across the matrix.
-         * The implementation follows the DP methodology.
-         * @param kernelSize should be an odd value. Describes the dimensions of the matrix
-         * @param sigma      is the standard deviation. Based on the value, the kernel is affected.
-         * Should be a value between 0 and 1 in order to keep the effect applied by the kernel sharp and narrow.
-         * @return A matrix of double elements that is normalized.
-         */
-        static vector<vector<double>> generateGaussianKernel(int kernelSize, double sigma);
-        static int*  computeHistogram(cv::Mat);
-        static bool isBlue(const cv::Vec3b&);
+            /**
+             * This function will try so simulate the kernel that cv::GaussianBlur uses.
+             * The kernel can be seen as a window that moves across the matrix.
+             * The implementation follows the DP methodology.
+             * @param kernelSize should be an odd value. Describes the dimensions of the matrix
+             * @param sigma      is the standard deviation. Based on the value, the kernel is affected.
+             * Should be a value between 0 and 1 in order to keep the effect applied by the kernel sharp and narrow.
+             * @return A matrix of double elements that is normalized.
+             */
+            static vector<vector<double>> generateGaussianKernel(int kernelSize, double sigma);
+            static int*  computeHistogram(Mat);
+
+            static bool isBlue(const Vec3b&);
+            static bool isInside(int, int, int, int);
+
+            /** MORPHOLOGICAL OPERATIONS **/
+            static Mat dilation(Mat, neighborhood_structure, int=1);
+            static Mat erosion(Mat, neighborhood_structure, int=1);
+            static Mat closing(Mat, neighborhood_structure, int=1);
+            static Mat opening(Mat, neighborhood_structure, int=1);
+
+            static neighborhood_structure getNeigborhood() { return neighborhood; }
+
+        private:
+            inline static neighborhood_structure neighborhood = {
+            8,
+            {0, -1, -1, -1, 0, 1, 1, 1},
+            {1, 1, 0, -1, -1, -1, 0, 1}
+            };
     };
 }
 
