@@ -28,6 +28,7 @@ namespace ALPR {
         int convertToGreyScale();
         int convertToBinary();
         int applyBlur(vector<vector<double>>);
+
         static int hasEUIdentifier(cv::Mat image);
     };
 }

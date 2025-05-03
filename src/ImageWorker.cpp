@@ -32,7 +32,7 @@ int ALPR::ImageWorker::convertToGreyScale() {
     for (int i = 0; i<this->m_image.rows; i++) {
         for (int j = 0; j<this->m_image.cols; j++) {
             this->m_greyscaleImage.at<uchar>(i, j) =
-                (this->m_image.at<cv::Vec3b>(i, j)[BLUE_CHANNEL] + this->m_image.at<cv::Vec3b>(i, j)[GREEN_CHANNEL] + this->m_image.at<cv::Vec3b>(i, j)[RED_CHANNEL])/3 ;
+                (this->m_image.at<Vec3b>(i, j)[BLUE_CHANNEL] + this->m_image.at<Vec3b>(i, j)[GREEN_CHANNEL] + this->m_image.at<Vec3b>(i, j)[RED_CHANNEL])/3 ;
         }
     }
 
@@ -133,15 +133,15 @@ bool detectBlueRectangle(const Mat& inputImage, Rect& outRect) {
     int minX = inputImage.cols, maxX = 0;
     int minY = inputImage.rows, maxY = 0;
 
-    for (int y = 0; y < hsv.rows; y++) {
-        for (int x = 0; x < hsv.cols; x++) {
-            Vec3b hsvPixel = hsv.at<Vec3b>(y, x);
+    for (int i = 0; i < hsv.rows; i++) {
+        for (int j = 0; j < hsv.cols; j++) {
+            Vec3b hsvPixel = hsv.at<Vec3b>(i,j);
 
             if (ALPR::Util::isBlue(hsvPixel)) {
-                minX = min(minX, x);
-                maxX = max(maxX, x);
-                minY = min(minY, y);
-                maxY = max(maxY, y);
+                minX = min(minX, j);
+                maxX = max(maxX, j);
+                minY = min(minY, i);
+                maxY = max(maxY, i);
             }
         }
     }
@@ -189,7 +189,7 @@ int ALPR::ImageWorker::preProcess() {
     }
 
     if (this->convertToBinary() == FAILURE) {
-        std::cout << "Failed to convert to greyscale\n";
+        std::cout << "Failed to convert to binary\n";
         return FAILURE;
     }
 
@@ -230,10 +230,10 @@ void ALPR::ImageWorker::process() {
         if (area > maxArea) {
             maxArea = area;
             bestPlate = candidates[i];
-        }    }
+        }
+    }
 
     this->m_ROI = this->m_image(bestPlate);
-    imshow("Original Image",     this->m_image);
     imshow("Region of interest", this->m_ROI);
 }
 
