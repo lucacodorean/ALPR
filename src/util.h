@@ -23,6 +23,10 @@
     #define SUCCESS         0
     #define FAILURE         1
 
+    #define STRONG_EDGE     255
+    #define WEAK_EDGE       100
+    #define NO_EDGE         0
+
 #endif
 
 
@@ -34,6 +38,16 @@ typedef struct{
     int di[8];
     int dj[8];
 } neighborhood_structure;
+
+struct Gradients{
+    Mat gx, gy, module;
+
+    Gradients(Mat gx, Mat gy, Mat module) {
+        this->gx = gx;
+        this->gy = gy;
+        this->module = module;
+    }
+};
 
 namespace ALPR {
     class Util {
@@ -61,6 +75,7 @@ namespace ALPR {
             static Mat opening(Mat, neighborhood_structure, int);
 
             static neighborhood_structure getNeighborhood() { return neighborhood; }
+            static void Canny(Mat, Mat&, int, int);
 
         private:
             inline static neighborhood_structure neighborhood = {
@@ -68,6 +83,24 @@ namespace ALPR {
             {0, -1, -1, -1, 0, 1, 1, 1},
             {1, 1, 0, -1, -1, -1, 0, 1}
             };
+
+            inline static  std::vector<std::vector<int>> sobel_kernel_x = {
+            {-1, 0, 1},
+            {-2, 0, 2},
+            {-1, 0, 1}
+            };
+
+            inline static std::vector<std::vector<int>> sobel_kernel_y = {
+                {1, 2, 1},
+                {0, 0, 0},
+                {-1, -2, -1}
+            };
+
+            static std::vector<std::vector<int>> getSobelKernelX() { return sobel_kernel_x; }
+            static std::vector<std::vector<int>> getSobelKernelY() { return sobel_kernel_y; }
+            static Gradients retrieveGradients(Mat, std::vector<std::vector<int>>, std::vector<std::vector<int>>);
+            static Mat retrieveSuppression(Gradients);
+            static Mat applyHysteresis(Mat, int, int);
     };
 }
 

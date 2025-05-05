@@ -68,42 +68,6 @@ int ALPR::ImageWorker::applyBlur(vector<vector<double>> kernel) {
     return SUCCESS;
 }
 
-int getAdaptiveThreshold(Mat image) {
-    int threshold = 0;
-    int total = image.rows * image.cols;
-    int* histogram = ALPR::Util::computeHistogram(image);
-
-    float sum = 0;
-    for (int i = 0; i < 256; i++) sum += i * histogram[i];
-
-    float sumB = 0;
-    int wB = 0;
-    int wF = 0;
-    float maxVariance = 0;
-    threshold = 0;
-
-
-    for (int i = 0; i < 256; i++) {
-        wB += histogram[i];
-        if (wB == 0) continue;
-
-        wF = total - wB;
-        if (wF == 0) break;
-
-        sumB += i * histogram[i];
-        float mB = sumB / wB;
-        float mF = (sum - sumB) / wF;
-
-        float variance = wB * wF * (mB - mF) * (mB - mF);
-
-        if (variance > maxVariance) {
-            maxVariance = variance;
-            threshold = i;
-        }
-    }
-
-    return threshold;
-}
 
 int ALPR::ImageWorker::convertToBinary() {
     if (this->m_blurredImage.type() != CV_8UC1) {
@@ -112,11 +76,10 @@ int ALPR::ImageWorker::convertToBinary() {
     }
 
     this->m_binaryImage = Mat::zeros(this->m_blurredImage.rows, this->m_blurredImage.cols, CV_8UC1);
-    int threshold = getAdaptiveThreshold(this->m_blurredImage);
 
     for (int i = 0; i < this->m_image.rows; i++) {
         for (int j = 0; j < this->m_image.cols; j++) {
-            this->m_binaryImage.at<uchar>(i,j) = this->m_blurredImage.at<uchar>(i,j) < threshold ? 0 : 255;
+            this->m_binaryImage.at<uchar>(i,j) = this->m_blurredImage.at<uchar>(i,j) < BW_THRESHOLD ? 0 : 255;
         }
     }
     return SUCCESS;
@@ -202,8 +165,14 @@ void ALPR::ImageWorker::process() {
         return;
     }
 
+
+    /*
+     * Algoritmul Canny a fost implementat si in clasa Util, inca trebuie determinati parametri care sa se muleze pe acesta.
+     * Algoritmul din biblioteca openCV permite setarea marimii kernelului sobel si o optimizare pentru gradient
+     */
+
     Mat edges;
-    Canny(this->m_blurredImage, edges, 75, 250);
+    Canny(this->m_blurredImage, edges, 75, 250, 3, true);
     edges = Util::closing(edges, Util::getNeighborhood(),1);
 
     std::vector<Rect> candidates;
@@ -234,6 +203,7 @@ void ALPR::ImageWorker::process() {
     }
 
     this->m_ROI = this->m_image(bestPlate);
+    imshow("Original Image", this->m_image);
     imshow("Region of interest", this->m_ROI);
 }
 
