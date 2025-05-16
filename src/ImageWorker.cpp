@@ -176,6 +176,7 @@ void ALPR::ImageWorker::process() {
     edges = Util::closing(edges, Util::getNeighborhood(),1);
 
     std::vector<Rect> candidates;
+    std::vector<Rect> allContours;
     std::vector<Vec4i> hierarchy;
     std::vector<std::vector<Point>> contours;
 
@@ -187,9 +188,11 @@ void ALPR::ImageWorker::process() {
         if (isPlateAspectRatioValid(bounding_rect) && hasEUIdentifier(temp) == SUCCESS) {
             candidates.push_back(bounding_rect);
         }
+
+        allContours.push_back(bounding_rect);
     }
 
-    if (candidates.empty()) return;
+    if (candidates.empty()) candidates = allContours;
 
     Rect bestPlate = candidates[0];
     double maxArea = bestPlate.width * bestPlate.height;
@@ -203,6 +206,7 @@ void ALPR::ImageWorker::process() {
     }
 
     this->m_ROI = this->m_image(bestPlate);
+    addROI(bestPlate);
     imshow("Original Image", this->m_image);
     imshow("Region of interest", this->m_ROI);
 }
@@ -213,4 +217,27 @@ void ALPR::ImageWorker::previewPreProcess() const {
     imshow("Blurred",       this->m_blurredImage);
     imshow("BW",            this->m_binaryImage);
     waitKey(0);
+}
+
+void ALPR::ImageWorker::addROI(const Rect& ROI) {
+    m_computedROIs.push_back(ROI);
+
+}
+
+std::vector<Rect> ALPR::ImageWorker::m_computedROIs = {};
+double computeIOU(const Rect& box1, const Rect& box2) {
+    cout<<box1<<" "<<box2<<endl;
+
+    int intersectionArea = (box1 & box2).area();
+    int unionArea = box1.area() + box2.area() - intersectionArea;
+    return (1.0 * intersectionArea) / unionArea;
+}
+
+int ALPR::ImageWorker::runValidation() {
+    for (int i = 0; i<m_computedROIs.size(); i++) {
+        double iou = computeIOU(m_computedROIs[i], m_validation_ROIs[i]);
+        std::cout << (iou>IOU_THRESHOLD ? "Positive" :  "False positive") <<" plate identified with IoU value: " << iou << "\n";
+    }
+
+    return 1;
 }
