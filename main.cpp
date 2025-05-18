@@ -2,6 +2,7 @@
 #include "src/ImageWorker.h"
 #include <iostream>
 #include <fstream>
+#include <chrono>
 
 using namespace std;
 using namespace ALPR;
@@ -17,8 +18,8 @@ void test() {
 }
 
 void val() {
-    ofstream fout("data.csv");
-    fout<<"index,iou\n";
+    ofstream fout("time.csv");
+    fout<<"index,width,height,time\n";
 
     static std::vector m_validation_ROIs = {
         cv::Rect(cv::Point(88, 139), cv::Point(156, 152)),
@@ -36,9 +37,11 @@ void val() {
     for (int i = 0; i<10; i++) {
         char path[256];
         sprintf_s(path, "E:\\UNIVERSITY\\AN III\\Procesare_de_imagini\\Laboratoare\\Proiect\\images\\val_set\\val_%d.jpeg", i+1);
+        double t = (double)cv::getTickCount();
         ImageWorker worker = ImageWorker(path, m_validation_ROIs[i]);
         worker.process();
-        fout<<i<<","<<worker.validate()<<"\n";
+        t = ((double)cv::getTickCount() - t)/cv::getTickFrequency();
+        fout<<i<<","<<worker.getWidth()<<","<<worker.getHeight()<<","<<t*1000<<"\n";
         cv::waitKey(0);
     }
 

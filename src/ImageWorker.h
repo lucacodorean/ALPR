@@ -19,6 +19,9 @@ namespace ALPR {
         void process();
         double validate() const;
 
+        int getWidth() const;
+        int getHeight() const;
+
     private:
         cv::Mat m_image;
         cv::Mat m_greyscaleImage;

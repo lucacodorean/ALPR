@@ -11,6 +11,15 @@
 using namespace cv;
 
 
+int ALPR::ImageWorker::getHeight() const {
+    return this->m_image.rows;
+}
+
+int ALPR::ImageWorker::getWidth() const {
+    return this->m_image.cols;
+}
+
+
 ALPR::ImageWorker::ImageWorker(const string& path) {
     if (path.empty()) {
         std::cout<<"Can't operate with this path.";
