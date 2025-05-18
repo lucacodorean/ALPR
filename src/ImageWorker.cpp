@@ -17,7 +17,18 @@ ALPR::ImageWorker::ImageWorker(const string& path) {
         return;
     }
 
-    this->m_image = cv::imread(path, cv::IMREAD_COLOR);
+    this->m_image = cv::imread(path, IMREAD_COLOR);
+}
+
+
+ALPR::ImageWorker::ImageWorker(const string& path, Rect validationROI) {
+    if (path.empty()) {
+        std::cout<<"Can't operate with this path.";
+        return;
+    }
+
+    this->m_image = cv::imread(path, IMREAD_COLOR);
+    this->m_validationROI = validationROI;
 }
 
 int ALPR::ImageWorker::convertToGreyScale() {
@@ -206,7 +217,8 @@ void ALPR::ImageWorker::process() {
     }
 
     this->m_ROI = this->m_image(bestPlate);
-    addROI(bestPlate);
+    rectangle(this->m_image, this->m_validationROI, Scalar(0, 255, 255), 2);
+    this->m_computedROI = bestPlate;
     imshow("Original Image", this->m_image);
     imshow("Region of interest", this->m_ROI);
 }
@@ -219,25 +231,15 @@ void ALPR::ImageWorker::previewPreProcess() const {
     waitKey(0);
 }
 
-void ALPR::ImageWorker::addROI(const Rect& ROI) {
-    m_computedROIs.push_back(ROI);
-
-}
-
-std::vector<Rect> ALPR::ImageWorker::m_computedROIs = {};
 double computeIOU(const Rect& box1, const Rect& box2) {
     cout<<box1<<" "<<box2<<endl;
 
     int intersectionArea = (box1 & box2).area();
     int unionArea = box1.area() + box2.area() - intersectionArea;
-    return (1.0 * intersectionArea) / unionArea;
+    return 1.0 * intersectionArea / unionArea;
 }
 
-int ALPR::ImageWorker::runValidation() {
-    for (int i = 0; i<m_computedROIs.size(); i++) {
-        double iou = computeIOU(m_computedROIs[i], m_validation_ROIs[i]);
-        std::cout << (iou>IOU_THRESHOLD ? "Positive" :  "False positive") <<" plate identified with IoU value: " << iou << "\n";
-    }
-
-    return 1;
+void ALPR::ImageWorker::validate() const {
+    double iou = computeIOU(this->m_computedROI, this->m_validationROI);
+    std::cout << (iou>IOU_THRESHOLD ? "Positive" :  "False positive") <<" plate identified with IoU value: " << iou << "\n";
 }

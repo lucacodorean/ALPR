@@ -27,7 +27,7 @@
     #define WEAK_EDGE       100
     #define NO_EDGE         0
 
-    #define IOU_THRESHOLD    0.75
+    #define IOU_THRESHOLD    0.60
 
 #endif
 
