@@ -1,7 +1,7 @@
 #include <opencv2/highgui.hpp>
-
 #include "src/ImageWorker.h"
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 using namespace ALPR;
@@ -17,6 +17,9 @@ void test() {
 }
 
 void val() {
+    ofstream fout("data.csv");
+    fout<<"index,iou\n";
+
     static std::vector m_validation_ROIs = {
         cv::Rect(cv::Point(88, 139), cv::Point(156, 152)),
         cv::Rect(cv::Point(53, 118), cv::Point(172, 146)),
@@ -35,9 +38,11 @@ void val() {
         sprintf_s(path, "E:\\UNIVERSITY\\AN III\\Procesare_de_imagini\\Laboratoare\\Proiect\\images\\val_set\\val_%d.jpeg", i+1);
         ImageWorker worker = ImageWorker(path, m_validation_ROIs[i]);
         worker.process();
-        worker.validate();
+        fout<<i<<","<<worker.validate()<<"\n";
         cv::waitKey(0);
     }
+
+    fout.close();
 }
 
 int main() {

@@ -239,7 +239,8 @@ double computeIOU(const Rect& box1, const Rect& box2) {
     return 1.0 * intersectionArea / unionArea;
 }
 
-void ALPR::ImageWorker::validate() const {
+double ALPR::ImageWorker::validate() const {
     double iou = computeIOU(this->m_computedROI, this->m_validationROI);
     std::cout << (iou>IOU_THRESHOLD ? "Positive" :  "False positive") <<" plate identified with IoU value: " << iou << "\n";
+    return iou;
 }

@@ -17,7 +17,7 @@ namespace ALPR {
         int preProcess();
         void previewPreProcess() const;
         void process();
-        void validate() const;
+        double validate() const;
 
     private:
         cv::Mat m_image;
