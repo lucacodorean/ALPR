@@ -25,10 +25,10 @@ void val() {
         cv::Rect(cv::Point(88, 139), cv::Point(156, 152)),
         cv::Rect(cv::Point(53, 118), cv::Point(172, 146)),
         cv::Rect(cv::Point(32, 91), cv::Point(183, 145)),
-        cv::Rect(cv::Point(121, 75), cv::Point(185, 90)),
+        cv::Rect(cv::Point(119, 102), cv::Point(214, 129)),
         cv::Rect(cv::Point(15, 68), cv::Point(258, 134)),
         cv::Rect(cv::Point(1098, 919), cv::Point(1541, 1073)),
-        cv::Rect(cv::Point(177, 330), cv::Point(303, 368)),
+        cv::Rect(cv::Point(186, 231), cv::Point(306, 264)),
         cv::Rect(cv::Point(102, 136), cv::Point(206, 163)),
         cv::Rect(cv::Point(467, 412), cv::Point(866, 508)),
         cv::Rect(cv::Point(99, 48), cv::Point(238, 97)),
@@ -40,6 +40,7 @@ void val() {
         double t = (double)cv::getTickCount();
         ImageWorker worker = ImageWorker(path, m_validation_ROIs[i]);
         worker.process();
+        cout<<worker.validate()<<endl;
         t = ((double)cv::getTickCount() - t)/cv::getTickFrequency();
         fout<<i<<","<<worker.getWidth()<<","<<worker.getHeight()<<","<<t*1000<<"\n";
         cv::waitKey(0);

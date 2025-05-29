@@ -47,7 +47,8 @@ bool ALPR::Util::isBlue(const Vec3b& pixel) {
     int H = pixel[0];
     int S = pixel[1];
     int V = pixel[2];
-    return H >= 100 && H <= 130 && S >= 150 && V >= 50;
+
+    return (H >= 102 && H <= 118) && (S >= 160 && S <= 255) && (V >= 70  && V <= 200);
 }
 
 bool ALPR::Util::isInside(int img_rows, int img_cols, int i, int j) {

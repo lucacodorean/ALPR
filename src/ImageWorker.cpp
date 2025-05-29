@@ -26,7 +26,7 @@ ALPR::ImageWorker::ImageWorker(const string& path) {
         return;
     }
 
-    this->m_image = cv::imread(path, IMREAD_COLOR);
+    this->m_image = imread(path, IMREAD_COLOR);
 }
 
 
@@ -36,7 +36,7 @@ ALPR::ImageWorker::ImageWorker(const string& path, Rect validationROI) {
         return;
     }
 
-    this->m_image = cv::imread(path, IMREAD_COLOR);
+    this->m_image = imread(path, IMREAD_COLOR);
     this->m_validationROI = validationROI;
 }
 
@@ -88,6 +88,28 @@ int ALPR::ImageWorker::applyBlur(vector<vector<double>> kernel) {
     return SUCCESS;
 }
 
+int* compute_histogram_naive(Mat source){
+    int* histogram = (int*)calloc(256, sizeof(int));
+
+    for (int i = 0; i<source.rows; i++) {
+        for (int j = 0; j<source.cols; j++) histogram[source.at<uchar>(i,j)]++;
+    }
+
+    return histogram;
+
+}
+
+int compute_mean(int* histogram){
+
+
+    int total_pixels = 0;
+    int mean = 0;
+    for (int i = 0; i<256; i++) total_pixels += histogram[i];
+    for (int g = 0; g<256; g++) mean += (g * histogram[g]);
+
+    mean /= total_pixels;
+    return mean;
+}
 
 int ALPR::ImageWorker::convertToBinary() {
     if (this->m_blurredImage.type() != CV_8UC1) {
@@ -95,13 +117,18 @@ int ALPR::ImageWorker::convertToBinary() {
         return FAILURE;
     }
 
+    int* histogram = compute_histogram_naive(this->m_blurredImage);
+    int treshhold = compute_mean(histogram);
+
     this->m_binaryImage = Mat::zeros(this->m_blurredImage.rows, this->m_blurredImage.cols, CV_8UC1);
 
     for (int i = 0; i < this->m_image.rows; i++) {
         for (int j = 0; j < this->m_image.cols; j++) {
-            this->m_binaryImage.at<uchar>(i,j) = this->m_blurredImage.at<uchar>(i,j) < BW_THRESHOLD ? 0 : 255;
+            this->m_binaryImage.at<uchar>(i,j) = this->m_blurredImage.at<uchar>(i,j) < treshhold ? 0 : 255;
         }
     }
+
+    free(histogram); histogram = NULL;
     return SUCCESS;
 }
 
